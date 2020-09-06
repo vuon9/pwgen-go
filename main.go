@@ -27,6 +27,7 @@ const (
 )
 
 func main() {
+	// TODO: Build a CLI with options to generate password
 	rand.Seed(time.Now().UnixNano())
 	pwRand(nil, 16, PW_DIGITS|PW_UPPERS, nil)
 }
@@ -67,6 +68,7 @@ func pwRand(buf *string, size int, pwFlags byte, remove *string) {
 
 	fmt.Println(pwFlags, pwFlags&PW_DIGITS, pwFlags&PW_UPPERS, pwFlags&PW_SYMBOLS)
 
+	// TODO: Clean this debugging
 	fmt.Printf("%v\n%v\n%v\n%v",
 		pwds[0:4],
 		pwds[4:8],
