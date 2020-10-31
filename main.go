@@ -142,6 +142,18 @@ func main() {
 	var removeChars = ""
 	var debug bool
 
+	flag.Parse()
+
+	pwArgs := filterValidArgs(os.Args[1:])
+	pwOptions := defaultPwOptions()
+	switch {
+	case len(pwArgs) >= 1:
+		pwOptions.pwLen, _ = strconv.Atoi(pwArgs[0])
+		fallthrough
+	case len(pwArgs) >= 2:
+		pwOptions.numPw, _ = strconv.Atoi(pwArgs[1])
+	}
+
 	switch {
 	case commands.GetBool(cmdCapitalize):
 		pwFlags |= PW_UPPERS
