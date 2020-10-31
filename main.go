@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -28,10 +30,38 @@ const (
 	pwVowels    = "01aeiouyAEIOUY"
 )
 
-func main() {
-	println("Usage: pwgen-go [ OPTIONS ] [ pw_length ] [ num_pw ]")
-	println("Options supported by pwgen-go:")
+func defaultPwOptions() pwOptions {
+	return pwOptions{
+		pwLen: 16,
+		numPw: 1,
+	}
+}
 
+type pwOptions struct {
+	pwLen int
+	numPw int
+}
+
+func filterValidArgs(allOsArgs []string) []string {
+	// Check if argument is non-empty value and has no prefix (means not a flag)
+	isValidArgument := func(arg string) bool {
+		return arg != "" && !strings.HasPrefix("-", arg)
+	}
+
+	allArgs := os.Args[1:]
+
+	validArgs := make([]string, 0)
+	for _, rawArg := range allArgs {
+		if !isValidArgument(rawArg) {
+			continue
+		}
+		validArgs = append(validArgs, rawArg)
+	}
+
+	return validArgs
+}
+
+func main() {
 	var pwFlags byte
 
 	capitalize := flag.Bool("c", false, "Include at least one capital letter in the password")
@@ -39,19 +69,31 @@ func main() {
 	number := flag.Bool("n", false, "Include at least one number in the password")
 	nonNumber := flag.Bool("0", false, "Don't include numbers in the password")
 	symbol := flag.Bool("y", false, "Include at least one special symbol in the password")
+	help := flag.Bool("h", false, "Get help")
 	// random := flag.Bool("s", false, "Generate completely random passwords")
 	ambigous := flag.Bool("B", false, "Don't include ambiguous characters in the password")
-	help := flag.Bool("h", false, "Print a help message")
 	// sha1 := flag.Bool("H", false, "Use sha1 hash of given file as a (not so) random generator")
 	// column := flag.Bool("C", false, "Print the generated passwords in columns")
 	// nonColumn := flag.Bool("1", false, "Don't print the generated passwords in columns")
 	nonVowels := flag.Bool("v", false, "Do not use any vowels so as to avoid accidental nasty words")
 
+	flag.Parse()
+
+	pwArgs := filterValidArgs(os.Args[1:])
+	pwOptions := defaultPwOptions()
+	switch {
+	case len(pwArgs) >= 1:
+		pwOptions.pwLen, _ = strconv.Atoi(pwArgs[0])
+		fallthrough
+	case len(pwArgs) >= 2:
+		pwOptions.numPw, _ = strconv.Atoi(pwArgs[1])
+	}
+
 	switch {
 	case *capitalize:
 		pwFlags |= PW_UPPERS
 	case *nonCapitalize:
-		pwFlags ^= PW_UPPERS
+		pwFlags &^= PW_UPPERS
 	case *number:
 		pwFlags |= PW_DIGITS
 	case *nonNumber:
@@ -67,15 +109,15 @@ func main() {
 	case *nonVowels:
 		pwFlags |= PW_NO_VOWELS
 	case *help:
+		fmt.Println("Usage: pwgen-go [ OPTIONS ] [ pw_length | default: 16 ] [ num_pw | default: 1 ]")
+		fmt.Println("Options supported by pwgen-go:")
 		flag.PrintDefaults()
-		os.Exit(1)
+		os.Exit(0)
 	}
-
-	flag.Parse()
 
 	// TODO: Build a CLI with options to generate password
 	rand.Seed(time.Now().UnixNano())
-	pwRand(nil, 16, pwFlags, nil)
+	pwRand(nil, pwOptions.pwLen, pwOptions.numPw, pwFlags, nil)
 }
 
 func randomize(size int, chars string, t int) string {
@@ -87,7 +129,7 @@ func randomize(size int, chars string, t int) string {
 	return string(newPw)
 }
 
-func pwRand(buf *string, size int, pwFlags byte, remove *string) {
+func pwRand(buf *string, size int, numPwds int, pwFlags byte, remove *string) {
 	// var ch, chars, wChars string
 	// var i, len, featureFlags int
 
@@ -104,21 +146,20 @@ func pwRand(buf *string, size int, pwFlags byte, remove *string) {
 		chars += pwSymbols
 	}
 
+	if (pwFlags & PW_AMBIGUOUS) != 0 {
+		chars += pwAmbiguous
+	}
+
+	if (pwFlags & PW_NO_VOWELS) == 0 {
+		chars += pwVowels
+	}
+
 	chars += pwLowers
 
-	pwds := make([]string, 16)
+	pwds := make([]string, numPwds)
 
 	for i := range pwds {
 		pwds[i] = randomize(size, chars, i)
+		fmt.Println(pwds[i])
 	}
-
-	// fmt.Println(pwFlags, pwFlags&PW_DIGITS, pwFlags&PW_UPPERS, pwFlags&PW_SYMBOLS)
-
-	// TODO: Clean this debugging
-	fmt.Printf("%v\n%v\n%v\n%v",
-		pwds[0:4],
-		pwds[4:8],
-		pwds[8:12],
-		pwds[12:16],
-	)
 }
