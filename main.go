@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
 	"flag"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"strconv"
@@ -30,8 +33,8 @@ const (
 	pwVowels    = "01aeiouyAEIOUY"
 )
 
-func defaultPwOptions() pwOptions {
-	return pwOptions{
+func defaultPwOptions() *pwOptions {
+	return &pwOptions{
 		pwLen: 16,
 		numPw: 1,
 	}
@@ -42,23 +45,38 @@ type pwOptions struct {
 	numPw int
 }
 
-func filterValidArgs(allOsArgs []string) []string {
-	// Check if argument is non-empty value and has no prefix (means not a flag)
-	isValidArgument := func(arg string) bool {
-		return arg != "" && !strings.HasPrefix("-", arg)
+func filterValidArgs(allOsArgs []string) []int {
+	// The valid argument should be int
+	isValidArgument := func(arg string) (int, bool) {
+		isFlag := strings.HasPrefix("-", arg)
+		if isFlag {
+			return 0, false
+		}
+
+		val, err := strconv.Atoi(arg)
+		return val, err == nil
 	}
 
-	allArgs := os.Args[1:]
-
-	validArgs := make([]string, 0)
-	for _, rawArg := range allArgs {
-		if !isValidArgument(rawArg) {
-			continue
+	validArgs := make([]int, 0)
+	for _, rawArg := range allOsArgs {
+		if val, ok := isValidArgument(rawArg); ok {
+			validArgs = append(validArgs, val)
 		}
-		validArgs = append(validArgs, rawArg)
 	}
 
 	return validArgs
+}
+
+func getOptions(pwArgs []int, pwOptions *pwOptions) *pwOptions {
+	switch {
+	case len(pwArgs) >= 1:
+		pwOptions.pwLen = pwArgs[0]
+		fallthrough
+	case len(pwArgs) >= 2:
+		pwOptions.numPw = pwArgs[1]
+	}
+
+	return pwOptions
 }
 
 func main() {
@@ -72,22 +90,24 @@ func main() {
 	help := flag.Bool("h", false, "Get help")
 	// random := flag.Bool("s", false, "Generate completely random passwords")
 	ambigous := flag.Bool("B", false, "Don't include ambiguous characters in the password")
-	// sha1 := flag.Bool("H", false, "Use sha1 hash of given file as a (not so) random generator")
+	sha1 := flag.String("H", "", "Use sha1 hash of given file as a (not so) random generator")
 	// column := flag.Bool("C", false, "Print the generated passwords in columns")
 	// nonColumn := flag.Bool("1", false, "Don't print the generated passwords in columns")
 	nonVowels := flag.Bool("v", false, "Do not use any vowels so as to avoid accidental nasty words")
 
 	flag.Parse()
 
-	pwArgs := filterValidArgs(os.Args[1:])
-	pwOptions := defaultPwOptions()
-	switch {
-	case len(pwArgs) >= 1:
-		pwOptions.pwLen, _ = strconv.Atoi(pwArgs[0])
-		fallthrough
-	case len(pwArgs) >= 2:
-		pwOptions.numPw, _ = strconv.Atoi(pwArgs[1])
-	}
+	pwOptions := getOptions(
+		filterValidArgs(os.Args[1:]),
+		defaultPwOptions(),
+	)
+
+	type generateFunc int
+	const (
+		typeRand = 1
+		typeSha1 = 2
+	)
+	var typeFunc generateFunc = typeRand
 
 	switch {
 	case *capitalize:
@@ -103,7 +123,8 @@ func main() {
 	// case *random:
 	case *ambigous:
 		pwFlags |= PW_AMBIGUOUS
-	// case *sha1:
+	case *sha1 != "":
+		typeFunc = typeSha1
 	// case *column:
 	// case *nonColumn:
 	case *nonVowels:
@@ -115,9 +136,45 @@ func main() {
 		os.Exit(0)
 	}
 
-	// TODO: Build a CLI with options to generate password
-	rand.Seed(time.Now().UnixNano())
-	pwRand(nil, pwOptions.pwLen, pwOptions.numPw, pwFlags, nil)
+	switch typeFunc {
+	case typeRand:
+		{
+			// TODO: Build a CLI with options to generate password
+			rand.Seed(time.Now().UnixNano())
+			pwRand(nil, pwOptions.pwLen, pwOptions.numPw, pwFlags, nil)
+		}
+	case typeSha1:
+		{
+			splitted := strings.Split(*sha1, "#")
+			if len(splitted) != 2 {
+				println("err: Sha1 filepath and seed are invalid, should be path/sub_path/file.extension#seed")
+				os.Exit(0)
+			}
+
+			filePath, seed := splitted[0], splitted[1]
+			sha1File(filePath, seed)
+		}
+	}
+}
+
+func sha1File(filePath string, seed string) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		println("err: Couldn't open file")
+		os.Exit(0)
+	}
+	defer f.Close()
+
+	h := hmac.New(sha1.New, []byte(seed))
+	if _, err := io.Copy(h, f); err != nil {
+		println("err: Couldn't has file content")
+		os.Exit(0)
+	}
+
+	var s string
+	_, _ = h.Write([]byte(s))
+	bs := h.Sum(nil)
+	fmt.Printf("%x\n", bs)
 }
 
 func randomize(size int, chars string, t int) string {
