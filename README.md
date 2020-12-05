@@ -1,6 +1,8 @@
 # pwgen-go
 Password generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
 
+![Go](https://github.com/vuon9/pwgen-go/workflows/Go/badge.svg)
+
 ## The manual
 
 This is following pwgen's manual: https://linux.die.net/man/1/pwgen
