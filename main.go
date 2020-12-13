@@ -15,12 +15,6 @@ import (
 )
 
 const (
-	// TODO: Investigate how to use these below
-	CONSONANT = 0x0001
-	VOWEL     = 0x0002
-	DIPTHONG  = 0x0004
-	NOT_FIRST = 0x0008
-
 	PW_DIGITS    = 1
 	PW_UPPERS    = 2
 	PW_SYMBOLS   = 4
@@ -69,7 +63,7 @@ func filterValidArgs(allOsArgs []string) []int {
 	return validArgs
 }
 
-func getOptions(pwArgs []int, pwOptions *pwOptions) *pwOptions {
+func getOptions(pwArgs []int, pwOptions *pwOptions) (*pwOptions, error) {
 	if len(pwArgs) >= 1 {
 		pwOptions.pwLen = pwArgs[0]
 	}
@@ -78,7 +72,11 @@ func getOptions(pwArgs []int, pwOptions *pwOptions) *pwOptions {
 		pwOptions.numPw = pwArgs[1]
 	}
 
-	return pwOptions
+	if pwOptions.numPw < 1 || pwOptions.pwLen < 5 {
+		return nil, errors.New("The number of password should be >= 1 and the length of password shoul be >= 5")
+	}
+
+	return pwOptions, nil
 }
 
 func main() {
@@ -90,7 +88,7 @@ func main() {
 	cmdSymbol := "symbol"
 	cmdRemoveChars := "remove-chars"
 	cmdSha1 := "sha1"
-	cmdAmbigous := "ambigous"
+	cmdAmbiguous := "ambiguous"
 	cmdNoVowels := "no-vowels"
 	cmdSecure := "secure"
 	cmdColumn := "column"
@@ -107,7 +105,7 @@ func main() {
 			NewBoolCommand(Option{cmdSymbol, "y", "", "Include at least one special symbol in the password"}),
 			NewStringCommand(Option{cmdRemoveChars, "r", "-r <chars> or --remove-chars=<chars>", "Remove characters from the set of characters to generate passwords"}),
 			NewStringCommand(Option{cmdSha1, "H", "-H or -sha1=path/to/file[#seed]", "Use sha1 hash of given file as a (not so) random generator"}),
-			NewBoolCommand(Option{cmdAmbigous, "B", "", "Don't include ambiguous characters in the password"}),
+			NewBoolCommand(Option{cmdAmbiguous, "B", "", "Don't include ambiguous characters in the password"}),
 			NewBoolCommand(Option{cmdNoVowels, "v", "", "Do not use any vowels so as to avoid accidental nasty words"}),
 			NewBoolCommand(Option{cmdSecure, "s", "", "Generate completely random passwords"}),
 			NewBoolCommand(Option{cmdColumn, "", "", "Print the generated passwords in columns"}),
@@ -132,10 +130,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	pwOptions := getOptions(
-		filterValidArgs(os.Args[0:]),
-		defaultPwOptions(),
-	)
+	pwOptions, err := getOptions(filterValidArgs(os.Args[0:]), defaultPwOptions())
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	var pwFlags byte
 	var withColumn bool
@@ -155,7 +154,7 @@ func main() {
 		pwFlags = PW_DIGITS | PW_UPPERS
 	case commands.GetBool(cmdSymbol):
 		pwFlags |= PW_SYMBOLS
-	case commands.GetBool(cmdAmbigous):
+	case commands.GetBool(cmdAmbiguous):
 		pwFlags |= PW_AMBIGUOUS
 	case commands.GetBool(cmdNoVowels):
 		pwFlags |= PW_NO_VOWELS | PW_DIGITS | PW_UPPERS
@@ -219,15 +218,6 @@ func sha1File(filePath string, seed string) {
 	fmt.Printf("%x\n", bs)
 }
 
-func randomize(size int, chars string) []byte {
-	newPw := make([]byte, size)
-	for i := range newPw {
-		newPw[i] = chars[rand.Int63()%int64(len(chars))]
-	}
-
-	return newPw
-}
-
 func eligibleChars(pwFlags byte, removeChars string) string {
 	chars := pwLowers
 	if (pwFlags & PW_DIGITS) != 0 {
@@ -260,6 +250,15 @@ func eligibleChars(pwFlags byte, removeChars string) string {
 func pwRand(buf *string, pwOptions *pwOptions, chars string) ([]string, error) {
 	if len(chars) == 0 {
 		return nil, errors.New("no available chars for generating password")
+	}
+
+	randomize := func(size int, chars string) []byte {
+		newPw := make([]byte, size)
+		for i := range newPw {
+			newPw[i] = chars[rand.Int63()%int64(len(chars))]
+		}
+
+		return newPw
 	}
 
 	rand.Seed(time.Now().UnixNano())

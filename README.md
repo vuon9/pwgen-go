@@ -1,12 +1,7 @@
 # pwgen-go
-Password generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
+Random password generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
 
 ![Go](https://github.com/vuon9/pwgen-go/workflows/Go/badge.svg)
-
-## The manual
-
-This is following pwgen's manual: https://linux.die.net/man/1/pwgen
-or can follow the usages by `pwgen-go -help` or `pwgen-go -h`.
 
 ## Download
 
@@ -35,7 +30,7 @@ Options supported by pwgen-go:
      Remove characters from the set of characters to generate passwords
  -H or -sha1=path/to/file[#seed]
      Use sha1 hash of given file as a (not so) random generator
- -B or -ambigous
+ -B or -ambiguous
     Don't include ambiguous characters in the password
  -v or -no-vowels
     Do not use any vowels so as to avoid accidental nasty words
