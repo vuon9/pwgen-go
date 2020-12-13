@@ -1,5 +1,5 @@
 # pwgen-go
-Random password generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
+Random password CLI generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
 
 ![Go](https://github.com/vuon9/pwgen-go/workflows/Go/badge.svg)
 
