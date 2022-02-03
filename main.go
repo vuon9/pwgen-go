@@ -79,38 +79,40 @@ func getOptions(pwArgs []int, pwOptions *pwOptions) (*pwOptions, error) {
 	return pwOptions, nil
 }
 
-func main() {
-	cmdCapitalize := "capitalize"
-	cmdNoCapitalize := "no-capitalize"
-	cmdHelp := "help"
-	cmdNumerals := "numerals"
-	cmdNoNumerals := "no-numerals"
-	cmdSymbol := "symbol"
-	cmdRemoveChars := "remove-chars"
-	cmdSha1 := "sha1"
-	cmdAmbiguous := "ambiguous"
-	cmdNoVowels := "no-vowels"
-	cmdSecure := "secure"
-	cmdColumn := "column"
-	cmdNoColumn := "no-column"
-	cmdDebug := "debug"
+var (
+	cmdCapitalize   cmdName = "capitalize"
+	cmdNoCapitalize cmdName = "no-capitalize"
+	cmdHelp         cmdName = "help"
+	cmdNumerals     cmdName = "numerals"
+	cmdNoNumerals   cmdName = "no-numerals"
+	cmdSymbol       cmdName = "symbol"
+	cmdRemoveChars  cmdName = "remove-chars"
+	cmdSha1         cmdName = "sha1"
+	cmdAmbiguous    cmdName = "ambiguous"
+	cmdNoVowels     cmdName = "no-vowels"
+	cmdSecure       cmdName = "secure"
+	cmdColumn       cmdName = "column"
+	cmdNoColumn     cmdName = "no-column"
+	cmdDebug        cmdName = "debug"
+)
 
+func main() {
 	commands := NewCommandController(
 		NewItems(
-			NewBoolCommand(Option{cmdHelp, "h", "", "Get help"}),
-			NewBoolCommand(Option{cmdCapitalize, "c", "", "Include at least one capital letter in the password"}),
-			NewBoolCommand(Option{cmdNoCapitalize, "A", "", "Don't include capital letters in the password"}),
-			NewBoolCommand(Option{cmdNumerals, "n", "", "Include at least one number in the password"}),
-			NewBoolCommand(Option{cmdNoNumerals, "0", "", "Don't include numbers in the password"}),
-			NewBoolCommand(Option{cmdSymbol, "y", "", "Include at least one special symbol in the password"}),
-			NewStringCommand(Option{cmdRemoveChars, "r", "-r <chars> or --remove-chars=<chars>", "Remove characters from the set of characters to generate passwords"}),
-			NewStringCommand(Option{cmdSha1, "H", "-H or -sha1=path/to/file[#seed]", "Use sha1 hash of given file as a (not so) random generator"}),
-			NewBoolCommand(Option{cmdAmbiguous, "B", "", "Don't include ambiguous characters in the password"}),
-			NewBoolCommand(Option{cmdNoVowels, "v", "", "Do not use any vowels so as to avoid accidental nasty words"}),
-			NewBoolCommand(Option{cmdSecure, "s", "", "Generate completely random passwords"}),
-			NewBoolCommand(Option{cmdColumn, "", "", "Print the generated passwords in columns"}),
-			NewBoolCommand(Option{cmdNoColumn, "", "", "Don't print the generated passwords in columns"}),
-			NewBoolCommand(Option{cmdDebug, "vvv", "", "Enable debug mode"}),
+			NewBoolCommand(cmdHelp, "h", "false", "Get help"),
+			NewBoolCommand(cmdCapitalize, "c", "false", "Include at least one capital letter in the password"),
+			NewBoolCommand(cmdNoCapitalize, "A", "true", "Don't include capital letters in the password"),
+			NewBoolCommand(cmdNumerals, "n", "false", "Include at least one number in the password"),
+			NewBoolCommand(cmdNoNumerals, "0", "true", "Don't include numbers in the password"),
+			NewBoolCommand(cmdSymbol, "y", "false", "Include at least one special symbol in the password"),
+			NewStringCommand(cmdRemoveChars, "r", "", "Remove characters from the set of characters to generate passwords (ex: -r <chars> or --remove-chars=<chars>)"),
+			NewStringCommand(cmdSha1, "H", "", "Use sha1 hash of given file as a (not so) random generator (ex: -H or -sha1=path/to/file[#seed])"),
+			NewBoolCommand(cmdAmbiguous, "B", "false", "Don't include ambiguous characters in the password"),
+			NewBoolCommand(cmdNoVowels, "v", "false", "Do not use any vowels so as to avoid accidental nasty words"),
+			NewBoolCommand(cmdSecure, "s", "false", "Generate completely random passwords"),
+			NewBoolCommand(cmdColumn, "", "false", "Print the generated passwords in columns"),
+			NewBoolCommand(cmdNoColumn, "", "true", "Don't print the generated passwords in columns"),
+			NewBoolCommand(cmdDebug, "vvv", "false", "Enable debug mode"),
 		),
 		WithUsageHeader("Usage: pwgen-go [ OPTIONS ] [pw_length] [num_pw]\nOptions supported by pwgen-go:"),
 	)
@@ -138,18 +140,21 @@ func main() {
 
 	var pwFlags byte
 	var withColumn bool
-	var removeChars = ""
+	removeChars := ""
 	var debug bool
 
 	switch {
 	case commands.GetBool(cmdCapitalize):
 		pwFlags |= PW_UPPERS
+		fallthrough
 	case commands.GetBool(cmdNoCapitalize):
 		pwFlags &^= PW_UPPERS
 	case commands.GetBool(cmdNumerals):
 		pwFlags |= PW_DIGITS
+		fallthrough
 	case commands.GetBool(cmdNoNumerals):
 		pwFlags ^= PW_DIGITS
+		fallthrough
 	case commands.GetBool(cmdSecure):
 		pwFlags = PW_DIGITS | PW_UPPERS
 	case commands.GetBool(cmdSymbol):

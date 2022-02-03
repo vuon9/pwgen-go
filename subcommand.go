@@ -6,12 +6,14 @@ import (
 	"os"
 )
 
-type cmdOption func(c *baseCommand)
-type baseCommand struct {
-	cmds    cmdableSlice
-	cmdsMap map[string]interface{}
-	usage   func()
-}
+type (
+	cmdOption   func(c *baseCommand)
+	baseCommand struct {
+		cmds    cmdableSlice
+		cmdsMap map[cmdName]interface{}
+		usage   func()
+	}
+)
 
 type cmdableSlice []cmdable
 
@@ -20,17 +22,17 @@ func NewItems(cmds ...cmdable) []cmdable {
 }
 
 func NewCommandController(cmds []cmdable, opts ...cmdOption) *baseCommand {
-	c := &baseCommand{cmds: cmds, cmdsMap: make(map[string]interface{})}
+	c := &baseCommand{cmds: cmds, cmdsMap: make(map[cmdName]interface{})}
 
 	for i, opt := range cmds {
 		switch targetOpt := opt.(type) {
 		case *boolCmd:
-			targetOpt.ptr = flag.Bool(targetOpt.name, targetOpt.value, targetOpt.description)
+			targetOpt.ptr = flag.Bool(string(targetOpt.name), targetOpt.value, targetOpt.description)
 			if targetOpt.alias != "" {
 				flag.BoolVar(targetOpt.ptr, targetOpt.alias, *targetOpt.ptr, "")
 			}
 		case *stringCmd:
-			targetOpt.ptr = flag.String(targetOpt.name, targetOpt.value, targetOpt.description)
+			targetOpt.ptr = flag.String(string(targetOpt.name), targetOpt.value, targetOpt.description)
 			if targetOpt.alias != "" {
 				flag.StringVar(targetOpt.ptr, targetOpt.alias, *targetOpt.ptr, "")
 			}
@@ -72,19 +74,19 @@ func (c *baseCommand) Ready() {
 	}
 }
 
-func (c *baseCommand) GetBool(n string) bool {
+func (c *baseCommand) GetBool(n cmdName) bool {
 	return c.cmdsMap[n].(bool)
 }
 
-func (c *baseCommand) GetString(n string) string {
+func (c *baseCommand) GetString(n cmdName) string {
 	return c.cmdsMap[n].(string)
 }
 
-func (c cmdableSlice) GetBool(n string) bool {
+func (c cmdableSlice) GetBool(n cmdName) bool {
 	return false
 }
 
-func (c cmdableSlice) GetString(n string) string {
+func (c cmdableSlice) GetString(n cmdName) string {
 	return ""
 }
 
@@ -100,19 +102,21 @@ func (s cmdableSlice) AndExit(code int) {
 	os.Exit(code)
 }
 
+type cmdName string
+
 type cmdable interface {
-	Name() string
+	Name() cmdName
 	Usage() string
 }
 
 type Option struct {
-	name        string
+	name        cmdName
 	alias       string
-	usage       string
+	def         string
 	description string
 }
 
-func (c *Option) Name() string {
+func (c *Option) Name() cmdName {
 	return c.name
 }
 
@@ -121,13 +125,15 @@ func (c *Option) Alias() string {
 }
 
 func (c *Option) Usage() string {
+	def := c.def
+	if def == "" {
+		def = "<empty>"
+	}
 	switch {
-	case c.usage != "":
-		return fmt.Sprintf("%s\n     %s", c.usage, c.description)
 	case c.alias != "":
-		return fmt.Sprintf("-%s or -%s\n    %s", c.alias, c.name, c.description)
+		return fmt.Sprintf("-%s or -%s\n    %s (default: %s)", c.alias, c.name, c.description, def)
 	default:
-		return fmt.Sprintf("-%s\n     %s", c.name, c.description)
+		return fmt.Sprintf("-%s\n     %s (default: %s)", c.name, c.description, def)
 	}
 }
 
@@ -141,9 +147,9 @@ type boolCmd struct {
 	ptr   *bool
 }
 
-func NewBoolCommand(opt Option) cmdable {
+func NewBoolCommand(name cmdName, alias, usage, desc string) cmdable {
 	return &boolCmd{
-		Option: opt,
+		Option: Option{name, alias, usage, desc},
 	}
 }
 
@@ -153,8 +159,8 @@ type stringCmd struct {
 	ptr   *string
 }
 
-func NewStringCommand(opt Option) cmdable {
+func NewStringCommand(name cmdName, alias, usage, desc string) cmdable {
 	return &stringCmd{
-		Option: opt,
+		Option: Option{name, alias, usage, desc},
 	}
 }
