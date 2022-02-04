@@ -18,7 +18,7 @@ go install github.com/vuon9/pwgen-go
 Usage: pwgen-go [ OPTIONS ] [pw_length] [num_pw]
 Options supported by pwgen-go:
  -ambiguous, -B (default: false)
-    Don't include ambiguous characters in the password
+    Include ambiguous characters in the password
  -column,  (default: false)
     Print the generated passwords in columns
  -debug, -vvv (default: false)
