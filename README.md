@@ -44,7 +44,7 @@ Options supported by pwgen-go:
 ## Examples
 
 ```
-> go run . -secure -column 20 10
+> pwgen-go -secure -column 20 10
 LBCI_H0#M2q0H'2LYfnl    56M?O1ZY\G5h(YX6_^0J    R4O)1S:9[8vge"YGDZqa    SyJEEO5G03hI_Q!..n)$
 *)G<~ZQG^Uy`q'F|]CKU    m`(2onEi&_S1el8F\G1/    f!1ou|e0SO#/S^a\BrB`    _R8O|K},KBy6gOI29UQr
 IA!n[D5$mI'x~~X{DsyI    /ltSpA8\vT90Cxau!4qb
