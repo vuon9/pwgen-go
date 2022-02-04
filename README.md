@@ -34,7 +34,7 @@ Options supported by pwgen-go:
  -remove-chars, -r (default: <empty>)
     Remove characters from the set of characters to generate passwords (ex: -r <chars> or --remove-chars=<chars>)
  -secure, -s (default: false)
-    Generate completely random passwords
+    Generate random passwords with digits, symbols, ambiguous, uppers
  -sha1, -H (default: <empty>)
     Use sha1 hash of given file as a (not so) random generator (ex: -H or -sha1=path/to/file[#seed])
  -symbol, -y (default: false)
@@ -44,11 +44,8 @@ Options supported by pwgen-go:
 ## Examples
 
 ```
-> go run . -column -remove-chars="bzaa" 20 22
-KxTC7fuirIBOOwUiuou0    uHStEiGFKhecGE1In8uj    IEe1LkwwiWCfdUmiQYSE    yc7MtORu3e5URPtOZSJ5
-LFVoYurmYnEFnsOXvRBu    9CCthoPI4cxfyy1Hglv0    D1U3wE5GiRFU8TwCHG0m    wisY928pxY9Zv94Gew31
-eWe2e7SGYeE95tk1Ye6A    SRODOEUUSrsLY6o31Npo    EY9SvRsySx0LxOvtpI03    iAvuEknMcHoRTKHmsGjp
-sCqjUwmQRC5cTO4ZHlym    thL1Oo97KeAx3MX9sFhq    cPUBtOsgXZovQLSukjoN    p6KYXiVYcpnSmA0JHdPj
-qN2HRWBPedHrkIButjUr    i1igUwjGBUR3Auu4UMfV    DO4WEdIon1Bwv6Ip4I5R    iOK4VMneREZDATUE2LLV
-4uTAZyTiWIHj181sHTcU    ueAMTFximso9oc3iHwnj
+> go run . -secure -column 20 10
+LBCI_H0#M2q0H'2LYfnl    56M?O1ZY\G5h(YX6_^0J    R4O)1S:9[8vge"YGDZqa    SyJEEO5G03hI_Q!..n)$
+*)G<~ZQG^Uy`q'F|]CKU    m`(2onEi&_S1el8F\G1/    f!1ou|e0SO#/S^a\BrB`    _R8O|K},KBy6gOI29UQr
+IA!n[D5$mI'x~~X{DsyI    /ltSpA8\vT90Cxau!4qb
 ```

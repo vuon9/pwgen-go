@@ -138,7 +138,7 @@ func main() {
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdSecure) },
-			optFlagFn: func() { pwFlags |= PW_DIGITS | PW_UPPERS },
+			optFlagFn: func() { pwFlags |= PW_DIGITS | PW_UPPERS | PW_SYMBOLS | PW_AMBIGUOUS },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdSymbol) },
