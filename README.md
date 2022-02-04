@@ -61,16 +61,6 @@ qxIAhFTNoPuecpGeD2Um    EOf0DdpIEtCxpYm1omWk
 ```
 
 ```
-> pwgen-go -column -r="bzaX" 20 22
-vS2E2GkEwW1MV2eOAnUm    yUoI7FJ7ygnR1BBloRfU    hTNS8jrkFOhfIN0UZTd0    J4yLWgFTuSwY0ROImvJI
-UAu3U7i2FYOy7HiDkep8    cTRALWAYgP1tOmPIVyF5    OlmrcfkDoI1tstCIlDIF    BAKud0swVeE9O9DW4yqA
-yjPOGMEL1e2wVLdR0JIg    f5ui30osIeV0dt7qGoYh    0fGeIYyTvIx0w6Feufrc    1qPxVWrKWFRcD1uAHA7Y
-IQe1ycYCe0tR5KU3ii8A    gmf6iAiRUupUyusN1y4E    AryAOBoJJlxqUi3dutwB    Onmj0oeS4giDAyU3O1BI
-rDN8My30HgDY0yHwsomO    EPT9yfNidJuwUHdRU1Us    T0wTG8Em7Kj8VVw1FU3Z    C0wuwfjeHT6BcklB5VKG
-qxIAhFTNoPuecpGeD2Um    EOf0DdpIEtCxpYm1omWk
-```
-
-```
 > pwgen-go -no-capitalize -r="bzaX" 5 10
 04dr8   9q82t   9v1q4   k29nx   644ik   i320j   637o0   6vce0   3q31k   qq4n6
 ```
