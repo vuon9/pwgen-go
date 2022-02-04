@@ -1,45 +1,54 @@
 # pwgen-go
-Random password CLI generator practice in Go. It is inspired by https://github.com/jbernard/pwgen
-
 ![Go](https://github.com/vuon9/pwgen-go/workflows/Go/badge.svg)
 
 ## Download
 
 ```bash
-go get -u github.com/vuon9/pwgen-go
+go install github.com/vuon9/pwgen-go
 ```
+
+## Debug
+
+```PWGEN_GO_DEBUG=true```
 
 ## Usages
 
 ```md
+> pwgen-go -help
 Usage: pwgen-go [ OPTIONS ] [pw_length] [num_pw]
 Options supported by pwgen-go:
- -h or -help
-    Get help
- -c or -capitalize
-    Include at least one capital letter in the password
- -A or -no-capitalize
-    Don't include capital letters in the password
- -n or -numerals
-    Include at least one number in the password
- -0 or -no-numerals
-    Don't include numbers in the password
- -y or -symbol
-    Include at least one special symbol in the password
- -r <chars> or --remove-chars=<chars>
-     Remove characters from the set of characters to generate passwords
- -H or -sha1=path/to/file[#seed]
-     Use sha1 hash of given file as a (not so) random generator
- -B or -ambiguous
+ -ambiguous, -B (default: false)
     Don't include ambiguous characters in the password
- -v or -no-vowels
-    Do not use any vowels so as to avoid accidental nasty words
- -s or -secure
-    Generate completely random passwords
- -column
-     Print the generated passwords in columns
- -no-column
-     Don't print the generated passwords in columns
- -vvv or -debug
+ -column,  (default: false)
+    Print the generated passwords in columns
+ -debug, -vvv (default: false)
     Enable debug mode
+ -help, -h (default: false)
+    Get help
+ -no-capitalize, -A (default: true)
+    Don't include capital letters in the password
+ -no-numerals, -0 (default: true)
+    Don't include numbers in the password
+ -no-vowels, -v (default: false)
+    Don't include any vowels so as to avoid accidental nasty words
+ -remove-chars, -r (default: <empty>)
+    Remove characters from the set of characters to generate passwords (ex: -r <chars> or --remove-chars=<chars>)
+ -secure, -s (default: false)
+    Generate completely random passwords
+ -sha1, -H (default: <empty>)
+    Use sha1 hash of given file as a (not so) random generator (ex: -H or -sha1=path/to/file[#seed])
+ -symbol, -y (default: false)
+    Include at least one special symbol in the password
+```
+
+## Examples
+
+```
+> pwgen-go -column -remove-chars="bzaa" 20 22
+ldtovroffwuvklekjnvm    nenkcpheqdoipdthvnjm    fucgnkuytggileohwsve    xgwdoqvwouqmkslsiqvh
+olirhswrjkquohpxsfit    ofokhpnksdyedktxvxtn    prlkkmsecvvdkwwfgtlk    rcnfokrewyerjfcjndrs
+qniywvgejecychuetrqh    cxsquoueyvxjnlownnwx    fsyopntknulmniqeinwx    leemsrwtfmrmmmvxtpjg
+mispnpnoemlhitgrtjhh    odkunevrtcvrsrysipfp    umixnivwqhilqwuskxhw    dcohkgoukhrysdyfwmho
+fyenfrysthmfqirfvonx    mctxoocsgskxevgmhiev    uokntlwwrmthjlwrghqk    sgfhfxfkskdljoxtmwfv
+hxigrlmjrqikflupkvcx    ntfjmdqcilchrthwwmyp
 ```
