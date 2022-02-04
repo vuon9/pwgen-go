@@ -189,8 +189,8 @@ func newCommands() *baseCommand {
 	commands := NewCommandController(
 		NewItems(
 			NewBoolCommand(cmdHelp, "h", false, "Get help"),
-			NewBoolCommand(cmdNoCapitalize, "A", true, "Don't include capital letters in the password"),
-			NewBoolCommand(cmdNoNumerals, "0", true, "Don't include numbers in the password"),
+			NewBoolCommand(cmdNoCapitalize, "A", false, "Don't include capital letters in the password"),
+			NewBoolCommand(cmdNoNumerals, "0", false, "Don't include numbers in the password"),
 			NewBoolCommand(cmdAmbiguous, "B", false, "Don't include ambiguous characters in the password"),
 			NewBoolCommand(cmdNoVowels, "v", false, "Don't include any vowels so as to avoid accidental nasty words"),
 			NewBoolCommand(cmdSymbol, "y", false, "Include at least one special symbol in the password"),
