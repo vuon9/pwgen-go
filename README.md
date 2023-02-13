@@ -9,9 +9,10 @@ go install github.com/vuon9/pwgen-go
 
 ## Debug
 
+Enable this below flag to show the debugging logs.
 ```PWGEN_GO_DEBUG=true```
 
-## Usages
+## Usage
 
 ```md
 > pwgen-go -help
