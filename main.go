@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	PW_DIGITS    = 1
-	PW_UPPERS    = 2
-	PW_SYMBOLS   = 4
-	PW_AMBIGUOUS = 8
-	PW_VOWELS    = 10
+	PwDigits   = 1
+	PwUppers   = 2
+	PwSymbols  = 4
+	PwAmbigous = 8
+	PwVowels   = 10
 
 	pwDigits    = "0123456789"
 	pwUppers    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -115,7 +115,7 @@ func main() {
 	}
 
 	var pwFlags byte
-	pwFlags |= PW_DIGITS | PW_UPPERS
+	pwFlags |= PwDigits | PwUppers | PwSymbols
 	var withColumn bool
 
 	commands.isDebug, _ = strconv.ParseBool(os.Getenv("PWGEN_GO_DEBUG"))
@@ -126,27 +126,27 @@ func main() {
 	}{
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdNoCapitalize) },
-			optFlagFn: func() { pwFlags &^= PW_UPPERS },
+			optFlagFn: func() { pwFlags &^= PwUppers },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdNoNumerals) },
-			optFlagFn: func() { pwFlags &^= PW_DIGITS },
+			optFlagFn: func() { pwFlags &^= PwDigits },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdNoVowels) },
-			optFlagFn: func() { pwFlags &^= PW_VOWELS },
+			optFlagFn: func() { pwFlags &^= PwVowels },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdSecure) },
-			optFlagFn: func() { pwFlags |= PW_DIGITS | PW_UPPERS | PW_SYMBOLS | PW_AMBIGUOUS },
+			optFlagFn: func() { pwFlags |= PwDigits | PwUppers | PwSymbols | PwAmbigous },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdSymbol) },
-			optFlagFn: func() { pwFlags |= PW_SYMBOLS },
+			optFlagFn: func() { pwFlags |= PwSymbols },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdAmbiguous) },
-			optFlagFn: func() { pwFlags |= PW_AMBIGUOUS },
+			optFlagFn: func() { pwFlags |= PwAmbigous },
 		},
 		{
 			optCheck:  func() bool { return commands.GetBool(cmdColumn) },
@@ -168,7 +168,7 @@ func main() {
 	}
 
 	removeChars := commands.GetString(cmdRemoveChars)
-	passwords, err := pwRand(nil, pwOptions, eligibleChars(pwFlags, removeChars))
+	passwords, err := pwRand(pwOptions, eligibleChars(pwFlags, removeChars))
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -232,23 +232,23 @@ func sha1File(filePath string, seed string) {
 
 func eligibleChars(pwFlags byte, removeChars string) string {
 	chars := pwLowers
-	if (pwFlags & PW_DIGITS) != 0 {
+	if (pwFlags & PwDigits) != 0 {
 		chars += pwDigits
 	}
 
-	if (pwFlags & PW_UPPERS) != 0 {
+	if (pwFlags & PwUppers) != 0 {
 		chars += pwUppers
 	}
 
-	if (pwFlags & PW_SYMBOLS) != 0 {
+	if (pwFlags & PwSymbols) != 0 {
 		chars += pwSymbols
 	}
 
-	if (pwFlags & PW_AMBIGUOUS) != 0 {
+	if (pwFlags & PwAmbigous) != 0 {
 		chars += pwAmbiguous
 	}
 
-	if (pwFlags & PW_VOWELS) != 0 {
+	if (pwFlags & PwVowels) != 0 {
 		chars += pwVowels
 	}
 
@@ -259,28 +259,30 @@ func eligibleChars(pwFlags byte, removeChars string) string {
 	return chars
 }
 
-func pwRand(buf *string, pwOptions *pwOptions, chars string) ([]string, error) {
+func pwRand(pwOptions *pwOptions, chars string) ([]string, error) {
 	if len(chars) == 0 {
 		return nil, errors.New("no available chars for generating password")
 	}
 
-	randomize := func(size int, chars string) []byte {
+	randomize := func(rng *rand.Rand, size int, chars string) []byte {
 		newPw := make([]byte, size)
 		for i := range newPw {
-			newPw[i] = chars[rand.Int63()%int64(len(chars))]
+			newPw[i] = chars[rng.Int63()%int64(len(chars))]
 		}
 
 		return newPw
 	}
 
-	rand.Seed(time.Now().UnixNano())
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+
 	passwords := make([]string, pwOptions.numPw)
 	wg := sync.WaitGroup{}
 	wg.Add(pwOptions.numPw)
 	for i := range passwords {
 		go func(i int) {
 			defer wg.Done()
-			passwords[i] = string(randomize(pwOptions.pwLen, chars))
+			passwords[i] = string(randomize(rng, pwOptions.pwLen, chars))
 		}(i)
 	}
 	wg.Wait()
