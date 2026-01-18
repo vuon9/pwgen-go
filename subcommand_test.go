@@ -29,7 +29,7 @@ func TestNewItems(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(tt *testing.T) {
 			actual := NewItems(testCase.arg...)
-			if reflect.DeepEqual(testCase.want, actual) {
+			if !reflect.DeepEqual(testCase.want, actual) {
 				tt.Errorf("NewItems(): want %v, actual %v", testCase.want, actual)
 			}
 		})
