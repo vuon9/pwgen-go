@@ -73,7 +73,7 @@ func getOptions(pwArgs []int, pwOptions *pwOptions) (*pwOptions, error) {
 	}
 
 	if pwOptions.numPw < 1 || pwOptions.pwLen < 5 {
-		return nil, errors.New("The number of password should be >= 1 and the length of password shoul be >= 5")
+		return nil, errors.New("total of passwords should be >= 1 and the length should be >= 5")
 	}
 
 	return pwOptions, nil
